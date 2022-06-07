@@ -26,7 +26,7 @@ class Alert:
         message['From'] = sender
         message['To'] = to
         message['Subject'] = subject
-        textPart = MIMEText(text_content, 'plain')
+        textPart = MIMEText(text_content, 'html')
         message.attach(textPart)
         self.mail_server.send_message(message)
         self.mail_server.quit()
@@ -46,9 +46,14 @@ class Alert:
             subject = f"Cold Alert:{model} Has Breached the {threshold} Degree threshold"
         else:
             subject = f"Frost Alert:{model} Has Breached the {threshold} Degree threshold"
-        message = ""
+        message = """<table> <tr>
+                        <th>City</th> <th>Temperature</th>  <th>Date</th> 
+                            </tr>
+                """
         for i in range(df.shape[0]):
-            message += f"{df.iloc[i]['CITY']} has forecasted temperatures of {df.iloc[i][df.columns[4]]} on date {df.iloc[i]['DATE']}\n\n"
+            message += f""""<tr> <td>{df.iloc[i]['CITY']}</td> 
+            <td>{df.iloc[i][df.columns[4]]}</td>   <td>{df.iloc[i]['DATE']}</td></tr>"""
+        message += "</table>"
         return subject,message
     def check_data(self,data_source,target_date = date.today(),run ="",attemps = 0):
         """
@@ -81,6 +86,7 @@ class Alert:
                 offset += temp.shape[0]
             del curr_df
             os.remove(i)
+        under_five_df = under_five_df.sort_values('CITY')
         under_five_df = under_five_df[(under_five_df['MIN_TEMP']>=2) & (under_five_df['MIN_TEMP']<5)]
         under_two_df = under_five_df[under_five_df['MIN_TEMP']<2]
         under_zero_df = under_five_df[under_five_df['MIN_TEMP']<0]

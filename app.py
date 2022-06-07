@@ -1,15 +1,21 @@
 from AlertSystem import alert_system
 import pandas as pd
-from datetime import datetime
+import datetime
 from freezegun import freeze_time
 import time
-#credentials = pd.read_excel("credentials.xlsx")
-#Initialize Alert System
-test_alert = alert_system.Alert("","","")
-test_alert.set_mail_connection("", "")
 
-Recipient = ""
-Sender = ""
+df = pd.read_csv('credentials.csv', delimiter="\t", encoding='utf-8')
+df = df.set_index(df['Keys'])
+ftp_url = df.loc['ftp-connection-url']['Vals']
+ftp_username = df.loc['ftp-username']['Vals']
+ftp_password = df.loc['ftp-password']['Vals']
+email_username = df.loc['email-username']['Vals']
+email_password = df.loc['email-password']['Vals']
+test_alert = alert_system.Alert(ftp_url,ftp_username,ftp_password)
+test_alert.set_mail_connection(email_username,email_password)
+
+Recipient = "cole@sucafina.com"
+Sender = "sucafinatemp@yahoo.com"
 
 curr_hour = None
 prev_day = None
