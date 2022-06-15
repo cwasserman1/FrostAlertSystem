@@ -8,7 +8,10 @@ from email.mime.text import MIMEText
 
 
 class Alert:
-    def set_mail_connection(self,username,password,host_name = "smtp.mail.yahoo.it",port_num = "587"):
+    def set_mail_connection(self,username,password,host_name = "email-smtp.us-east-1.amazonaws.com",port_num = 587):
+        """
+        Establishes a connection with the SMTP server and sets instance variables mail_server,username,passwrod,host_name, and port_num from function parameters
+        """
         self.mail_server = smtplib.SMTP(host=host_name, port=port_num)
         self.mail_server.starttls()
         self.mail_server.login(username, password)
@@ -17,11 +20,22 @@ class Alert:
         self.host_name = host_name
         self.port_num = port_num
     def reset_mail_connection(self):
+        """
+        Resets connection to the SMTP Server for instance variable mail_server
+        """
         self.mail_server = smtplib.SMTP(host=self.host_name, port=self.port_num)
         self.mail_server.starttls()
         self.mail_server.login(self.username, self.password)
         print("Mail Connection re-established")
     def send_mail(self,to,sender,subject,text_content):
+        """
+        Sends message over SMTP Connection from set_mail_connection from "sender" to recipient,"to", with subject and text_content
+        Params:
+            to(str): Email address or addresses separated by commas that email will go to
+            sender(str): Email address of the sender
+            subject(str): Subject of the email
+            text_content(str): Body of the email in HTML
+        """
         message = MIMEMultipart()
         message['From'] = sender
         message['To'] = to
@@ -31,6 +45,14 @@ class Alert:
         self.mail_server.send_message(message)
         self.mail_server.quit()
     def __init__(self,connection_url,ftp_username,ftp_password):
+        """
+        Constructor for Alert.
+        Initializes connection to the FTP
+        Params:
+            connection_url(str): url for the ftp connection
+            ftp_username(str): username for ftp account
+            ftp_password(str): password for ftp account
+        """
         self.ftp_username = ftp_username
         self.ftp_password = ftp_password
         self.connection_url = connection_url
@@ -41,6 +63,7 @@ class Alert:
         self.ftp = FTP(self.connection_url)
         self.ftp.login(self.ftp_username,self.ftp_password)
     def construct_message(self,df,model,threshold):
+        """Given a dataframe, a model and a threshold, construct_message will construct an email message"""
         subject = ""
         if threshold == "5":   
             subject = f"Cold Alert:{model} Has Breached the {threshold} Degree threshold"
@@ -68,7 +91,6 @@ class Alert:
         ftp = self.ftp
         ftp.cwd('Forecasts')
         file_list = ftp.nlst()
-        
         today_list = list(filter(lambda x: str(target_date) in x,file_list))
         today_list = list(filter(lambda x: x.split("_")[-1][:2]=="00" and data_source in x and "RAW" in x and run in x,today_list))
         cols = ['WMO','SRC_ID','CITY','DATE','MIN_TEMP']
